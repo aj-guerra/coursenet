@@ -1,4 +1,6 @@
-Title: UCD Catalog Extraction – Condensed Build Plan (R + ellmer + LLM)
+Title: UCD Catalog Extraction – Condensed Build Plan
+
+Tools: Python and OpenAI API
 
 Goal
 -  Extract per-year: (1) complete course corpus (IDs, titles, units, descriptions, prerequisites, cross-listings, terms, notes) and (2) undergraduate majors and their requirements.
