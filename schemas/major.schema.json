@@ -1,0 +1,59 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://example.org/schemas/major.schema.json",
+  "title": "Major",
+  "type": "object",
+  "required": [
+    "catalog_year",
+    "college",
+    "department",
+    "major_name",
+    "degree_type",
+    "requirements_blocks",
+    "raw_text_span_ids",
+    "schema_version"
+  ],
+  "properties": {
+    "catalog_year": {"type": "integer"},
+    "college": {"type": "string"},
+    "department": {"type": "string"},
+    "major_name": {"type": "string"},
+    "degree_type": {"type": "string"},
+    "tracks": {"type": ["array", "null"], "items": {"type": "string"}},
+    "unit_requirements": {"type": ["object", "null"]},
+    "requirements_blocks": {"type": "array", "items": {"$ref": "#/definitions/RequirementBlock"}},
+    "free_text_policies": {"type": ["string", "null"]},
+    "raw_text_span_ids": {"type": "array", "items": {"type": "string"}},
+    "confidence": {"type": ["number", "null"]},
+    "schema_version": {"type": "string"}
+  },
+  "definitions": {
+    "RequirementBlock": {
+      "type": "object",
+      "required": ["block_type", "title", "selection_rule", "items"],
+      "properties": {
+        "block_type": {"type": "string"},
+        "title": {"type": "string"},
+        "selection_rule": {"type": "string"},
+        "items": {"type": "array", "items": {"$ref": "#/definitions/RequirementItem"}},
+        "notes": {"type": ["string", "null"]},
+        "confidence": {"type": ["number", "null"]}
+      }
+    },
+    "RequirementItem": {
+      "type": "object",
+      "required": ["item_type"],
+      "properties": {
+        "item_type": {"type": "string"},
+        "course_id": {"type": ["string", "null"]},
+        "pattern": {"type": ["string", "null"]},
+        "category": {"type": ["string", "null"]},
+        "min_units": {"type": ["number", "null"]},
+        "max_units": {"type": ["number", "null"]},
+        "constraints": {"type": ["object", "null"]},
+        "confidence": {"type": ["number", "null"]}
+      }
+    }
+  }
+}
+

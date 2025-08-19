@@ -1,0 +1,30 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://example.org/schemas/document_map.schema.json",
+  "title": "DocumentMap",
+  "type": "object",
+  "required": ["catalog_year", "file_id", "toc_sections", "schema_version"],
+  "properties": {
+    "catalog_year": {"type": "integer"},
+    "file_id": {"type": "string"},
+    "toc_sections": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["title", "page_start", "page_end"],
+        "properties": {
+          "title": {"type": "string"},
+          "page_start": {"type": "integer"},
+          "page_end": {"type": "integer"},
+          "level": {"type": ["integer", "null"]},
+          "anchor_type": {"type": ["string", "null"]}
+        }
+      }
+    },
+    "inferred_sections": {"type": ["array", "null"], "items": {"type": "string"}},
+    "normalization_hints": {"type": ["object", "null"]},
+    "confidence": {"type": ["number", "null"]},
+    "schema_version": {"type": "string"}
+  }
+}
+
