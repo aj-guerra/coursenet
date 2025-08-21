@@ -67,13 +67,19 @@ cat("\n=== Step 2: Extracting PDF metadata ===\n")
 metadata_args <- c("--year", year, "--pdf", pdf_path)
 run_script("scripts/extract_pdf_metadata.R", metadata_args)
 
-# Step 3: Prepare for LLM agent (placeholder for future implementation)
-cat("\n=== Step 3: Preparing for LLM agent ===\n")
-cat("PDF metadata extraction completed. Ready for LLM structure agent.\n")
+# Step 3: Preprocess PDF pages into detailed blocks
+cat("\n=== Step 3: Preprocessing PDF pages ===\n")
+preprocess_args <- c("--year", year, "--pdf", pdf_path)
+run_script("scripts/preprocess_pdf_pages.R", preprocess_args)
+
+# Step 4: Prepare for LLM agent (placeholder for future implementation)
+cat("\n=== Step 4: Preparing for LLM agent ===\n")
+cat("PDF preprocessing completed. Ready for LLM structure agent.\n")
 cat("Next steps:\n")
 cat("1. Review extracted metadata in data/interim/year=", year, "/pdf_metadata/\n", sep = "")
-cat("2. Review enhanced document map in data/processed/year=", year, "/document_map.json\n", sep = "")
-cat("3. Run LLM structure agent with extracted information\n")
+cat("2. Review page blocks in data/interim/year=", year, "/pages/\n", sep = "")
+cat("3. Review enhanced document map in data/processed/year=", year, "/document_map.json\n", sep = "")
+cat("4. Run LLM structure agent with extracted information\n")
 
 # Write pipeline completion log
 pipeline_log <- list(
@@ -82,7 +88,8 @@ pipeline_log <- list(
   steps = list(
     step0 = "install_r_deps",
     step1 = "initial_test",
-    step2 = "pdf_metadata_extraction"
+    step2 = "pdf_metadata_extraction",
+    step3 = "pdf_page_preprocessing"
   ),
   outputs = list(
     manifest = file.path("data", "interim", sprintf("year=%d", year), "manifest.json"),
