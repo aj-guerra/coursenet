@@ -1,0 +1,16 @@
+{
+  "year": 2024,
+  "file": "/workspace/tmp/sample.pdf",
+  "pages": 1,
+  "pdf_version": null,
+  "encrypted": false,
+  "linearized": false,
+  "created": "2007-02-23 15:56:37",
+  "modified": "1969-12-31 23:59:59",
+  "author": "Evangelos Vlachogiannis",
+  "title": null,
+  "subject": null,
+  "producer": "OpenOffice.org 2.1",
+  "creator": "Writer",
+  "sample_text": "Dummy PDF file\n"
+}
