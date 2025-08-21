@@ -1,0 +1,58 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://example.org/schemas/course.schema.json",
+  "title": "Course",
+  "type": "object",
+  "required": [
+    "catalog_year",
+    "department_code",
+    "course_id",
+    "title",
+    "units_min",
+    "units_max",
+    "description",
+    "raw_text_span_ids",
+    "schema_version"
+  ],
+  "properties": {
+    "catalog_year": {"type": "integer"},
+    "department_code": {"type": "string"},
+    "course_id": {"type": "string"},
+    "title": {"type": "string"},
+    "units_min": {"type": "number"},
+    "units_max": {"type": "number"},
+    "description": {"type": "string"},
+    "prerequisites": {"type": "array", "items": {"$ref": "#/definitions/PrerequisiteExpression"}},
+    "corequisites": {"type": ["array", "null"], "items": {"type": "string"}},
+    "recommended_prep": {"type": ["array", "null"], "items": {"type": "string"}},
+    "cross_listings": {"type": ["array", "null"], "items": {"type": "string"}},
+    "offered_terms": {"type": ["array", "null"], "items": {"type": "string"}},
+    "repeatability": {"type": ["string", "null"]},
+    "notes": {"type": ["string", "null"]},
+    "raw_text_span_ids": {"type": "array", "items": {"type": "string"}},
+    "confidence": {"type": ["number", "null"]},
+    "schema_version": {"type": "string"}
+  },
+  "definitions": {
+    "PrerequisiteExpression": {
+      "type": "object",
+      "required": ["expression_text", "normalized_logic"],
+      "properties": {
+        "expression_text": {"type": "string"},
+        "normalized_logic": {"$ref": "#/definitions/DSL"},
+        "referenced_courses": {"type": "array", "items": {"type": "string"}},
+        "constraints": {"type": ["object", "null"]},
+        "confidence": {"type": ["number", "null"]}
+      }
+    },
+    "DSL": {
+      "type": "object",
+      "required": ["op", "args"],
+      "properties": {
+        "op": {"type": "string"},
+        "args": {"type": "array"}
+      }
+    }
+  }
+}
+

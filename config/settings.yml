@@ -1,0 +1,30 @@
+schema_version: 0.1.0
+extractor_version: 0.1.0
+
+runs:
+  seed: 42
+  temperature: 0.0
+  top_p: 1.0
+
+years:
+  start: 2023
+  end: 2023
+
+chunking:
+  page_window: 6
+  stride: 3
+
+regex_hints:
+  department_header: "^[A-Z&/\-\s]{3,}\s+\([A-Z]{2,4}\)$"
+  course_header: "^[A-Z]{2,4}\s+\d+[A-Z]?\.?\s+\(.+?\)"
+  units_inline: "\((\d+(?:-\d+)?)\s+units?\)"
+
+validation_thresholds:
+  schema_pass_rate: 0.95
+  reference_resolution_rate: 0.90
+
+jobs_defaults:
+  model: gpt-4o-mini
+  retries: 2
+  temperature: 0.0
+

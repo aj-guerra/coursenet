@@ -1,0 +1,14 @@
+# Example jobs file for a single-year initial test
+jobs:
+  - job_id: course_test_ecs
+    type: course_parser
+    inputs:
+      year: 2023
+      section: ECS
+    outputs:
+      target: data/processed/year=2023/courses-ecs.jsonl
+    params:
+      model: gpt-4o-mini
+      temperature: 0.0
+      retries: 1
+

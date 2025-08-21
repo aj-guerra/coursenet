@@ -1,0 +1,11 @@
+schema_version: 0.1.0
+
+department_aliases:
+  2023:
+    "ECS": ["Computer Science", "CS", "CompSci"]
+
+course_renumberings: {}
+
+terminology_aliases:
+  unit: ["units", "credit", "credits"]
+
