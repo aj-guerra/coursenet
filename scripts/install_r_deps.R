@@ -2,7 +2,8 @@
 
 required <- c(
   "jsonlite",
-  "pdftools"
+  "pdftools",
+  "digest"
 )
 
 is_installed <- function(pkg) {

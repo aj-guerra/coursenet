@@ -67,10 +67,10 @@ cat("\n=== Step 2: Extracting PDF metadata ===\n")
 metadata_args <- c("--year", year, "--pdf", pdf_path)
 run_script("scripts/extract_pdf_metadata.R", metadata_args)
 
-# Step 3: Preprocess PDF pages into detailed blocks
-cat("\n=== Step 3: Preprocessing PDF pages ===\n")
+# Step 3: Preprocess PDF pages using geometry-based column detection
+cat("\n=== Step 3: Preprocessing PDF pages (geometry-based) ===\n")
 preprocess_args <- c("--year", year, "--pdf", pdf_path)
-run_script("scripts/preprocess_pdf_pages.R", preprocess_args)
+run_script("scripts/preprocess_pdf_columns.R", preprocess_args)
 
 # Step 4: Prepare for LLM agent (placeholder for future implementation)
 cat("\n=== Step 4: Preparing for LLM agent ===\n")
@@ -89,7 +89,7 @@ pipeline_log <- list(
     step0 = "install_r_deps",
     step1 = "initial_test",
     step2 = "pdf_metadata_extraction",
-    step3 = "pdf_page_preprocessing"
+    step3 = "pdf_page_preprocessing_geometry"
   ),
   outputs = list(
     manifest = file.path("data", "interim", sprintf("year=%d", year), "manifest.json"),
