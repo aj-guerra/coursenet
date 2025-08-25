@@ -1,5 +1,7 @@
 #!/usr/bin/env Rscript
 
+warning("DEPRECATION: 'preprocess_pdf_pages.R' is deprecated. Use 'scripts/preprocess_pdf_unified.R' instead for unified digital/OCR processing.")
+
 args <- commandArgs(trailingOnly = TRUE)
 
 # Ensure user library path is available for package loading

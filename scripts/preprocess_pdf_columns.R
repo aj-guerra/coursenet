@@ -1,5 +1,7 @@
 #!/usr/bin/env Rscript
 
+warning("DEPRECATION: 'preprocess_pdf_columns.R' is deprecated. Use 'scripts/preprocess_pdf_unified.R' instead for unified digital/OCR processing.")
+
 args <- commandArgs(trailingOnly = TRUE)
 
 # Ensure user library path is available for package loading
@@ -61,7 +63,6 @@ file_checksum <- function(file_path) digest::digest(file_path, algo = "sha256", 
 # Word reconstruction from char-level data
 chars_to_words <- function(d) {
   if (nrow(d) == 0) return(d)
-  # Initial grouping: top-to-bottom heuristic using y desc (will be refined later)
   d <- d[order(-d$y, d$x), , drop = FALSE]
   words <- list()
   current <- NULL
@@ -82,7 +83,8 @@ chars_to_words <- function(d) {
       )
     } else {
       gap <- ch$x - (current$x + current$width)
-      if (isTRUE(ch$space) || gap > max(2, 0.5 * ch$height)) {
+      # Widen gap tolerance to better merge spaced headings
+      if (isTRUE(ch$space) || gap > max(6, 1.0 * ch$height)) {
         flush_word()
         current <- list(
           text = ch$text,
@@ -165,14 +167,13 @@ assign_columns <- function(words_df, cols) {
 }
 
 # Group words into lines within each column using visual top-to-bottom order
-words_to_lines <- function(words_df, page_height, y_threshold = 3) {
+words_to_lines <- function(words_df, page_height, y_threshold = 8) {
   if (nrow(words_df) == 0) return(list())
-  words_df$visual_y <- page_height - words_df$y  # smaller = closer to top
+  words_df$visual_y <- page_height - words_df$y
   lines <- list()
   idx <- 1L
   for (col in sort(unique(words_df$column_id))) {
     wcol <- words_df[words_df$column_id == col, , drop = FALSE]
-    # Order: top-to-bottom (visual_y asc), then left-to-right
     wcol <- wcol[order(wcol$visual_y, wcol$x), , drop = FALSE]
     current_y <- NA_real_
     current_words <- list()
@@ -269,16 +270,22 @@ for (page_num in all_pages) {
   geometry_filepath <- file.path(dir_pages, geometry_filename)
   jsonlite::write_json(geometry_json, geometry_filepath, pretty = TRUE, auto_unbox = TRUE, null = "null")
   
-  # Concise LLM-ready file: per-column text lines, top-to-bottom
+  # Concise LLM-ready file: per-column text lines, descending line_id per column
   lines_df <- res$lines
   num_cols <- length(res$columns)
   columns_text <- vector("list", length = num_cols)
   if (length(lines_df) > 0) {
+    get_line_num <- function(id) { as.integer(gsub("[^0-9]", "", id)) }
     for (col_idx in seq_len(num_cols)) {
-      col_lines <- vapply(lines_df[ vapply(lines_df, function(l) l$column_id == col_idx, logical(1)) ], function(l) l$text, character(1))
-      columns_text[[col_idx]] <- unname(as.list(col_lines))
+      col_lines <- lines_df[ vapply(lines_df, function(l) l$column_id == col_idx, logical(1)) ]
+      if (length(col_lines) > 1) {
+        ord <- order(vapply(col_lines, function(l) get_line_num(l$line_id), integer(1)), decreasing = TRUE)
+        col_lines <- col_lines[ord]
+      }
+      columns_text[[col_idx]] <- unname(lapply(col_lines, function(l) l$text))
     }
   }
+  
   llm_json <- list(
     page_number = res$page_number,
     columns_detected = num_cols,

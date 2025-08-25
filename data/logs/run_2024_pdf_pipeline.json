@@ -1,12 +1,13 @@
 {
   "run_id": "pdf_pipeline_2024",
   "inputs": {
-    "pdf": "data/raw/ucd_2024.pdf"
+    "pdf": "data/raw/p411.pdf"
   },
   "steps": {
     "step0": "install_r_deps",
     "step1": "initial_test",
-    "step2": "pdf_metadata_extraction"
+    "step2": "pdf_metadata_extraction",
+    "step3": "pdf_page_preprocessing_unified"
   },
   "outputs": {
     "manifest": "data/interim/year=2024/manifest.json",
@@ -15,5 +16,5 @@
     "document_map": "data/processed/year=2024/document_map.json"
   },
   "status": "completed",
-  "timestamp": "2025-08-21 11:56:32"
+  "timestamp": "2025-08-25 15:05:11"
 }

@@ -1,27 +1,8 @@
 #!/usr/bin/env Rscript
 
 args <- commandArgs(trailingOnly = TRUE)
-
-parse_args <- function(argsv) {
-  kv <- list()
-  i <- 1
-  while (i <= length(argsv)) {
-    key <- argsv[i]
-    if (startsWith(key, "--")) {
-      key <- substring(key, 3)
-      if ((i + 1) <= length(argsv) && !startsWith(argsv[i + 1], "--")) {
-        kv[[key]] <- argsv[i + 1]
-        i <- i + 2
-      } else {
-        kv[[key]] <- TRUE
-        i <- i + 1
-      }
-    } else {
-      i <- i + 1
-    }
-  }
-  kv
-}
+source(file.path("scripts", "utils_preprocess.R"))
+setup_r_environment()
 
 argv <- parse_args(args)
 if (is.null(argv$year) || is.null(argv$pdf)) {
@@ -35,11 +16,7 @@ if (!file.exists(pdf_path)) {
   stop(sprintf("PDF not found: %s", pdf_path))
 }
 
-# Configure writable R library for child processes
-lib_dir <- Sys.getenv("R_LIBS_USER", unset = "/workspace/.Rlibs")
-dir.create(lib_dir, recursive = TRUE, showWarnings = FALSE)
-.libPaths(c(lib_dir, .libPaths()))
-Sys.setenv(R_LIBS_USER = lib_dir)
+# R environment already configured by setup_r_environment()
 
 # Function to run a script and capture output
 run_script <- function(script_path, args) {
@@ -67,10 +44,10 @@ cat("\n=== Step 2: Extracting PDF metadata ===\n")
 metadata_args <- c("--year", year, "--pdf", pdf_path)
 run_script("scripts/extract_pdf_metadata.R", metadata_args)
 
-# Step 3: Preprocess PDF pages using geometry-based column detection
-cat("\n=== Step 3: Preprocessing PDF pages (geometry-based) ===\n")
+# Step 3: Preprocess PDF pages using unified digital/OCR detection
+cat("\n=== Step 3: Preprocessing PDF pages (unified digital/OCR detection) ===\n")
 preprocess_args <- c("--year", year, "--pdf", pdf_path)
-run_script("scripts/preprocess_pdf_columns.R", preprocess_args)
+run_script("scripts/preprocess_pdf_unified.R", preprocess_args)
 
 # Step 4: Prepare for LLM agent (placeholder for future implementation)
 cat("\n=== Step 4: Preparing for LLM agent ===\n")
@@ -89,7 +66,7 @@ pipeline_log <- list(
     step0 = "install_r_deps",
     step1 = "initial_test",
     step2 = "pdf_metadata_extraction",
-    step3 = "pdf_page_preprocessing_geometry"
+    step3 = "pdf_page_preprocessing_unified"
   ),
   outputs = list(
     manifest = file.path("data", "interim", sprintf("year=%d", year), "manifest.json"),
