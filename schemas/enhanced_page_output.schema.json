@@ -1,0 +1,692 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "enhanced_page_output.schema.json",
+  "title": "Enhanced Page Output Schema",
+  "description": "Comprehensive schema for enhanced page-level JSON output that consolidates all processing information",
+  "type": "object",
+  "required": ["page_info", "extraction_details", "content_structure", "processing_metadata", "quality_assessment"],
+  "properties": {
+    "page_info": {
+      "type": "object",
+      "description": "Basic page metadata and dimensions",
+      "required": ["page_number", "page_width", "page_height", "page_area"],
+      "properties": {
+        "page_number": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Page number in document"
+        },
+        "page_width": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Page width in points"
+        },
+        "page_height": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Page height in points"
+        },
+        "page_area": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Total page area in square points"
+        },
+        "rotation": {
+          "type": "number",
+          "description": "Page rotation in degrees"
+        },
+        "text_coverage": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Proportion of page covered by text"
+        }
+      }
+    },
+    "extraction_details": {
+      "type": "object",
+      "description": "Method, language, quality scores, and confidence metrics for extraction",
+      "required": ["extraction_method", "extraction_success", "overall_confidence"],
+      "properties": {
+        "extraction_method": {
+          "type": "string",
+          "enum": ["digital", "ocr", "mixed"],
+          "description": "Primary extraction method used"
+        },
+        "extraction_success": {
+          "type": "boolean",
+          "description": "Whether extraction completed successfully"
+        },
+        "fallback_methods": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["digital", "ocr", "manual"]
+          },
+          "description": "Fallback methods attempted if primary failed"
+        },
+        "language_detection": {
+          "type": "object",
+          "properties": {
+            "detected_language": {
+              "type": "string",
+              "description": "Primary detected language code (ISO 639-1)"
+            },
+            "language_confidence": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1,
+              "description": "Confidence in language detection"
+            },
+            "fallback_languages": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Alternative languages considered"
+            },
+            "mixed_language": {
+              "type": "boolean",
+              "description": "Whether multiple languages detected"
+            }
+          }
+        },
+        "overall_confidence": {
+          "$ref": "#/definitions/confidence_score"
+        },
+        "word_confidence": {
+          "$ref": "#/definitions/confidence_distribution"
+        },
+        "line_confidence": {
+          "$ref": "#/definitions/confidence_distribution"
+        }
+      }
+    },
+    "content_structure": {
+      "type": "object",
+      "description": "Columns, lines, semantic blocks, and tables with cross-references",
+      "properties": {
+        "columns": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/column_structure"
+          },
+          "description": "Detected text columns"
+        },
+        "lines": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/line_structure"
+          },
+          "description": "Text lines with detailed metadata"
+        },
+        "semantic_blocks": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/semantic_block"
+          },
+          "description": "Semantically classified text blocks"
+        },
+        "tables": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/table_structure"
+          },
+          "description": "Detected tables with cell structure"
+        },
+        "words": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/word_structure"
+          },
+          "description": "Individual words with detailed metadata"
+        }
+      }
+    },
+    "font_analysis": {
+      "type": "object",
+      "description": "Comprehensive font information with spatial distribution",
+      "properties": {
+        "font_statistics": {
+          "type": "object",
+          "properties": {
+            "unique_fonts": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Number of unique fonts detected"
+            },
+            "unique_sizes": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Number of unique font sizes"
+            },
+            "dominant_font": {
+              "type": "string",
+              "description": "Most common font family"
+            },
+            "dominant_size": {
+              "type": "number",
+              "minimum": 0,
+              "description": "Most common font size"
+            }
+          }
+        },
+        "font_details": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/font_detail"
+          },
+          "description": "Detailed font information for each text element"
+        },
+        "size_distribution": {
+          "type": "object",
+          "patternProperties": {
+            "^[0-9]+(\\.[0-9]+)?$": {
+              "type": "object",
+              "properties": {
+                "count": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "coverage": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 1
+                }
+              }
+            }
+          },
+          "description": "Distribution of font sizes with counts and coverage"
+        }
+      }
+    },
+    "processing_metadata": {
+      "type": "object",
+      "description": "Pipeline settings, timestamps, and fallback information",
+      "required": ["processing_timestamp", "pipeline_version"],
+      "properties": {
+        "processing_timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When processing completed"
+        },
+        "pipeline_version": {
+          "type": "string",
+          "description": "Version of processing pipeline used"
+        },
+        "settings_used": {
+          "type": "object",
+          "description": "Configuration settings applied during processing"
+        },
+        "processing_time": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Processing time in seconds"
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/processing_error"
+          },
+          "description": "Errors encountered during processing"
+        },
+        "warnings": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Warnings generated during processing"
+        }
+      }
+    },
+    "quality_assessment": {
+      "type": "object",
+      "description": "Detailed quality metrics and confidence distributions",
+      "properties": {
+        "overall_quality": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Overall quality score for the page"
+        },
+        "text_density": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Density of text content on page"
+        },
+        "character_distribution": {
+          "type": "object",
+          "properties": {
+            "alphabetic_ratio": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "numeric_ratio": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "punctuation_ratio": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "whitespace_ratio": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            }
+          }
+        },
+        "spatial_consistency": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Consistency of spatial layout"
+        },
+        "font_coverage": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Coverage of text by detectable fonts"
+        },
+        "confidence_breakdown": {
+          "type": "object",
+          "properties": {
+            "high_confidence_ratio": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1,
+              "description": "Ratio of text with high confidence (>0.8)"
+            },
+            "medium_confidence_ratio": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1,
+              "description": "Ratio of text with medium confidence (0.5-0.8)"
+            },
+            "low_confidence_ratio": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1,
+              "description": "Ratio of text with low confidence (<0.5)"
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "bounding_box": {
+      "type": "object",
+      "required": ["x", "y", "width", "height"],
+      "properties": {
+        "x": {
+          "type": "number",
+          "description": "Left coordinate"
+        },
+        "y": {
+          "type": "number",
+          "description": "Top coordinate"
+        },
+        "width": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Width of bounding box"
+        },
+        "height": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Height of bounding box"
+        },
+        "confidence": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Confidence in bounding box accuracy"
+        }
+      }
+    },
+    "confidence_score": {
+      "type": "object",
+      "properties": {
+        "mean": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Mean confidence score"
+        },
+        "count": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Number of elements contributing to score"
+        }
+      }
+    },
+    "confidence_distribution": {
+      "type": "object",
+      "properties": {
+        "mean": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "min": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "p25": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "median": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "p75": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "max": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "low_confidence_count": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Count of elements with confidence < 0.5"
+        },
+        "total_count": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "column_structure": {
+      "type": "object",
+      "required": ["column_id", "bounding_box"],
+      "properties": {
+        "column_id": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Unique column identifier"
+        },
+        "bounding_box": {
+          "$ref": "#/definitions/bounding_box"
+        },
+        "line_ids": {
+          "type": "array",
+          "items": {
+            "type": "integer"
+          },
+          "description": "IDs of lines contained in this column"
+        },
+        "text_alignment": {
+          "type": "string",
+          "enum": ["left", "center", "right", "justified"],
+          "description": "Text alignment within column"
+        },
+        "column_width": {
+          "type": "number",
+          "minimum": 0
+        }
+      }
+    },
+    "line_structure": {
+      "type": "object",
+      "required": ["line_id", "text", "bounding_box"],
+      "properties": {
+        "line_id": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Unique line identifier"
+        },
+        "text": {
+          "type": "string",
+          "description": "Full text content of line"
+        },
+        "bounding_box": {
+          "$ref": "#/definitions/bounding_box"
+        },
+        "word_ids": {
+          "type": "array",
+          "items": {
+            "type": "integer"
+          },
+          "description": "IDs of words in this line"
+        },
+        "column_id": {
+          "type": "integer",
+          "description": "ID of containing column"
+        },
+        "confidence": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "font_size": {
+          "type": "number",
+          "minimum": 0
+        },
+        "font_family": {
+          "type": "string"
+        }
+      }
+    },
+    "word_structure": {
+      "type": "object",
+      "required": ["word_id", "text", "bounding_box"],
+      "properties": {
+        "word_id": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Unique word identifier"
+        },
+        "text": {
+          "type": "string",
+          "description": "Word text content"
+        },
+        "bounding_box": {
+          "$ref": "#/definitions/bounding_box"
+        },
+        "line_id": {
+          "type": "integer",
+          "description": "ID of containing line"
+        },
+        "confidence": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "font_size": {
+          "type": "number",
+          "minimum": 0
+        },
+        "font_family": {
+          "type": "string"
+        },
+        "font_style": {
+          "type": "string",
+          "enum": ["normal", "italic", "bold", "bold-italic"]
+        }
+      }
+    },
+    "semantic_block": {
+      "type": "object",
+      "required": ["block_id", "classification", "bounding_box"],
+      "properties": {
+        "block_id": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Unique block identifier"
+        },
+        "classification": {
+          "type": "string",
+          "enum": ["title", "heading", "body", "table", "caption", "footnote", "header", "footer", "list", "code"],
+          "description": "Semantic classification of block"
+        },
+        "bounding_box": {
+          "$ref": "#/definitions/bounding_box"
+        },
+        "text": {
+          "type": "string",
+          "description": "Full text content of block"
+        },
+        "line_ids": {
+          "type": "array",
+          "items": {
+            "type": "integer"
+          },
+          "description": "IDs of lines in this block"
+        },
+        "confidence": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Confidence in semantic classification"
+        }
+      }
+    },
+    "table_structure": {
+      "type": "object",
+      "required": ["table_id", "bounding_box", "rows", "columns"],
+      "properties": {
+        "table_id": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Unique table identifier"
+        },
+        "bounding_box": {
+          "$ref": "#/definitions/bounding_box"
+        },
+        "rows": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Number of rows"
+        },
+        "columns": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Number of columns"
+        },
+        "cells": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/table_cell"
+          },
+          "description": "Individual table cells"
+        },
+        "confidence": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Confidence in table detection"
+        }
+      }
+    },
+    "table_cell": {
+      "type": "object",
+      "required": ["row", "column", "bounding_box"],
+      "properties": {
+        "row": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Row index (1-based)"
+        },
+        "column": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Column index (1-based)"
+        },
+        "bounding_box": {
+          "$ref": "#/definitions/bounding_box"
+        },
+        "text": {
+          "type": "string",
+          "description": "Cell text content"
+        },
+        "rowspan": {
+          "type": "integer",
+          "minimum": 1,
+          "default": 1,
+          "description": "Number of rows spanned"
+        },
+        "colspan": {
+          "type": "integer",
+          "minimum": 1,
+          "default": 1,
+          "description": "Number of columns spanned"
+        }
+      }
+    },
+    "font_detail": {
+      "type": "object",
+      "properties": {
+        "font_family": {
+          "type": "string",
+          "description": "Font family name"
+        },
+        "font_size": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Font size in points"
+        },
+        "font_style": {
+          "type": "string",
+          "enum": ["normal", "italic", "bold", "bold-italic"]
+        },
+        "count": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Number of characters with this font"
+        },
+        "coverage": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Proportion of page covered by this font"
+        },
+        "bounding_boxes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/bounding_box"
+          },
+          "description": "Bounding boxes for text with this font"
+        }
+      }
+    },
+    "processing_error": {
+      "type": "object",
+      "required": ["error_type", "message"],
+      "properties": {
+        "error_type": {
+          "type": "string",
+          "enum": ["extraction", "parsing", "validation", "font_analysis", "table_detection", "semantic_analysis"],
+          "description": "Category of error"
+        },
+        "message": {
+          "type": "string",
+          "description": "Error message"
+        },
+        "recovery_method": {
+          "type": "string",
+          "description": "How the error was handled"
+        },
+        "affected_elements": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Elements affected by the error"
+        }
+      }
+    }
+  }
+}

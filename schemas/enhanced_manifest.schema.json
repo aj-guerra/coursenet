@@ -1,0 +1,532 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "enhanced_manifest.schema.json",
+  "title": "Enhanced Manifest Schema",
+  "description": "Enhanced manifest schema that tracks comprehensive processing metadata across all pages",
+  "type": "object",
+  "required": ["document_info", "processing_summary", "pipeline_metadata", "quality_overview", "file_inventory"],
+  "properties": {
+    "document_info": {
+      "type": "object",
+      "description": "Catalog year, file details, and page counts",
+      "required": ["catalog_year", "total_pages", "file_size"],
+      "properties": {
+        "catalog_year": {
+          "type": "integer",
+          "minimum": 1900,
+          "maximum": 2100,
+          "description": "Academic catalog year"
+        },
+        "source_file": {
+          "type": "string",
+          "description": "Original PDF filename"
+        },
+        "file_size": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "File size in bytes"
+        },
+        "total_pages": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Total number of pages processed"
+        },
+        "pages_processed": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Number of pages successfully processed"
+        },
+        "pages_failed": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Number of pages that failed processing"
+        },
+        "document_title": {
+          "type": "string",
+          "description": "Extracted document title if available"
+        },
+        "creation_date": {
+          "type": "string",
+          "format": "date-time",
+          "description": "PDF creation date if available"
+        }
+      }
+    },
+    "processing_summary": {
+      "type": "object",
+      "description": "Extraction method distribution, OCR language usage, and quality statistics",
+      "properties": {
+        "extraction_methods": {
+          "type": "object",
+          "properties": {
+            "digital_pages": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Pages processed with digital extraction"
+            },
+            "ocr_pages": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Pages processed with OCR"
+            },
+            "mixed_pages": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Pages using mixed extraction methods"
+            },
+            "failed_pages": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Pages that failed all extraction methods"
+            }
+          }
+        },
+        "language_detection": {
+          "type": "object",
+          "properties": {
+            "primary_language": {
+              "type": "string",
+              "description": "Most common detected language (ISO 639-1)"
+            },
+            "language_distribution": {
+              "type": "object",
+              "patternProperties": {
+                "^[a-z]{2}$": {
+                  "type": "object",
+                  "properties": {
+                    "page_count": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "confidence": {
+                      "$ref": "#/definitions/confidence_distribution"
+                    }
+                  }
+                }
+              },
+              "description": "Distribution of languages across pages"
+            },
+            "mixed_language_pages": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Pages with multiple detected languages"
+            },
+            "fallback_usage": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Pages where language fallback was used"
+            }
+          }
+        },
+        "processing_statistics": {
+          "type": "object",
+          "properties": {
+            "total_processing_time": {
+              "type": "number",
+              "minimum": 0,
+              "description": "Total processing time in seconds"
+            },
+            "average_page_time": {
+              "type": "number",
+              "minimum": 0,
+              "description": "Average processing time per page"
+            },
+            "success_rate": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1,
+              "description": "Overall processing success rate"
+            },
+            "pages_with_tables": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Number of pages containing detected tables"
+            },
+            "pages_with_images": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Number of pages containing images"
+            }
+          }
+        }
+      }
+    },
+    "pipeline_metadata": {
+      "type": "object",
+      "description": "Settings used, processing timestamps, and version information",
+      "required": ["pipeline_version", "processing_started", "processing_completed"],
+      "properties": {
+        "pipeline_version": {
+          "type": "string",
+          "description": "Version of the processing pipeline"
+        },
+        "schema_version": {
+          "type": "string",
+          "description": "Version of the output schema used"
+        },
+        "processing_started": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When processing began"
+        },
+        "processing_completed": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When processing finished"
+        },
+        "settings_snapshot": {
+          "type": "object",
+          "description": "Configuration settings used during processing"
+        },
+        "system_info": {
+          "type": "object",
+          "properties": {
+            "r_version": {
+              "type": "string",
+              "description": "R version used for processing"
+            },
+            "operating_system": {
+              "type": "string",
+              "description": "Operating system"
+            },
+            "memory_usage": {
+              "type": "object",
+              "properties": {
+                "peak_memory_mb": {
+                  "type": "number",
+                  "minimum": 0
+                },
+                "average_memory_mb": {
+                  "type": "number",
+                  "minimum": 0
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "quality_overview": {
+      "type": "object",
+      "description": "Aggregate quality scores, confidence distributions, and error rates",
+      "properties": {
+        "overall_quality": {
+          "type": "object",
+          "properties": {
+            "mean_quality": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1,
+              "description": "Mean quality score across all pages"
+            },
+            "quality_distribution": {
+              "$ref": "#/definitions/distribution_stats"
+            },
+            "pages_high_quality": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Pages with quality score > 0.8"
+            },
+            "pages_medium_quality": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Pages with quality score 0.5-0.8"
+            },
+            "pages_low_quality": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Pages with quality score < 0.5"
+            }
+          }
+        },
+        "confidence_overview": {
+          "type": "object",
+          "properties": {
+            "mean_confidence": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1,
+              "description": "Mean confidence across all pages"
+            },
+            "confidence_distribution": {
+              "$ref": "#/definitions/confidence_distribution"
+            },
+            "low_confidence_pages": {
+              "type": "array",
+              "items": {
+                "type": "integer"
+              },
+              "description": "Page numbers with low confidence scores"
+            }
+          }
+        },
+        "error_summary": {
+          "type": "object",
+          "properties": {
+            "total_errors": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Total number of errors across all pages"
+            },
+            "total_warnings": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Total number of warnings"
+            },
+            "error_types": {
+              "type": "object",
+              "patternProperties": {
+                "^[a-z_]+$": {
+                  "type": "object",
+                  "properties": {
+                    "count": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "affected_pages": {
+                      "type": "array",
+                      "items": {
+                        "type": "integer"
+                      }
+                    },
+                    "recovery_rate": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 1
+                    }
+                  }
+                }
+              },
+              "description": "Breakdown of errors by type"
+            }
+          }
+        },
+        "content_analysis": {
+          "type": "object",
+          "properties": {
+            "total_text_coverage": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1,
+              "description": "Average text coverage across all pages"
+            },
+            "font_diversity": {
+              "type": "object",
+              "properties": {
+                "unique_fonts_total": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "unique_sizes_total": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "font_consistency": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 1
+                }
+              }
+            },
+            "table_analysis": {
+              "type": "object",
+              "properties": {
+                "total_tables": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "table_detection_confidence": {
+                  "$ref": "#/definitions/confidence_distribution"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "file_inventory": {
+      "type": "object",
+      "description": "Detailed list of output files with types and metadata",
+      "properties": {
+        "output_directory": {
+          "type": "string",
+          "description": "Base output directory path"
+        },
+        "page_files": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/page_file_info"
+          },
+          "description": "Information about individual page output files"
+        },
+        "summary_files": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/summary_file_info"
+          },
+          "description": "Information about summary and aggregate files"
+        },
+        "total_output_size": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Total size of all output files in bytes"
+        },
+        "file_counts": {
+          "type": "object",
+          "properties": {
+            "enhanced_pages": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "geometry_files": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "extraction_files": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "llm_files": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "confidence_distribution": {
+      "type": "object",
+      "properties": {
+        "mean": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "min": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "p25": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "median": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "p75": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "max": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "std_dev": {
+          "type": "number",
+          "minimum": 0
+        }
+      }
+    },
+    "distribution_stats": {
+      "type": "object",
+      "properties": {
+        "mean": {
+          "type": "number"
+        },
+        "min": {
+          "type": "number"
+        },
+        "p25": {
+          "type": "number"
+        },
+        "median": {
+          "type": "number"
+        },
+        "p75": {
+          "type": "number"
+        },
+        "max": {
+          "type": "number"
+        },
+        "std_dev": {
+          "type": "number",
+          "minimum": 0
+        }
+      }
+    },
+    "page_file_info": {
+      "type": "object",
+      "required": ["page_number", "file_type", "file_path", "file_size"],
+      "properties": {
+        "page_number": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "file_type": {
+          "type": "string",
+          "enum": ["enhanced", "geometry", "extraction", "llm"],
+          "description": "Type of page output file"
+        },
+        "file_path": {
+          "type": "string",
+          "description": "Relative path to the file"
+        },
+        "file_size": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "File size in bytes"
+        },
+        "created_timestamp": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "checksum": {
+          "type": "string",
+          "description": "File checksum for integrity verification"
+        },
+        "quality_score": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Quality score for this page"
+        }
+      }
+    },
+    "summary_file_info": {
+      "type": "object",
+      "required": ["file_type", "file_path", "file_size"],
+      "properties": {
+        "file_type": {
+          "type": "string",
+          "enum": ["manifest", "quality_report", "processing_log"],
+          "description": "Type of summary file"
+        },
+        "file_path": {
+          "type": "string",
+          "description": "Relative path to the file"
+        },
+        "file_size": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "File size in bytes"
+        },
+        "created_timestamp": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "description": {
+          "type": "string",
+          "description": "Description of file contents"
+        }
+      }
+    }
+  }
+}

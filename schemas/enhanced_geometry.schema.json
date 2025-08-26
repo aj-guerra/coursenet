@@ -1,0 +1,366 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Enhanced Geometry Schema",
+  "description": "Schema for PDF page geometry output with semantic analysis, font characteristics, table detection, and robust column detection",
+  "type": "object",
+  "required": ["page_number", "total_pages", "columns_detected", "columns", "blocks", "page_width", "page_height", "method", "processing_timestamp"],
+  "properties": {
+    "page_number": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Page number within the document"
+    },
+    "total_pages": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Total number of pages in the document"
+    },
+    "columns_detected": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Number of columns detected on the page"
+    },
+    "columns": {
+      "type": "array",
+      "description": "Column definitions with boundaries",
+      "items": {
+        "type": "object",
+        "required": ["column_id", "x_start", "x_end"],
+        "properties": {
+          "column_id": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "x_start": {
+            "type": "number"
+          },
+          "x_end": {
+            "type": "number"
+          }
+        }
+      }
+    },
+    "blocks": {
+      "type": "array",
+      "description": "Text blocks organized into lines",
+      "items": {
+        "type": "object",
+        "required": ["line_id", "column_id", "text"],
+        "properties": {
+          "line_id": {
+            "type": "string",
+            "pattern": "^line_\\d{4}$"
+          },
+          "column_id": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "text": {
+            "type": "string"
+          },
+          "block_type": {
+            "type": "string",
+            "enum": ["header", "course_code", "department", "body_text", "page_number", "other"],
+            "description": "Semantic classification of the text block"
+          },
+          "classification_confidence": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1,
+            "description": "Confidence score for the semantic classification"
+          }
+        }
+      }
+    },
+    "page_width": {
+      "type": "number",
+      "minimum": 0,
+      "description": "Page width in points"
+    },
+    "page_height": {
+      "type": "number",
+      "minimum": 0,
+      "description": "Page height in points"
+    },
+    "method": {
+      "type": "string",
+      "description": "Processing method used for this page"
+    },
+    "processing_timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When this page was processed"
+    },
+    "font_analysis": {
+      "type": "object",
+      "description": "Font characteristics analysis for the page",
+      "properties": {
+        "font_sizes": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "description": "Array of detected font sizes"
+        },
+        "dominant_fonts": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Most common font families on the page"
+        },
+        "size_distribution": {
+          "type": "object",
+          "properties": {
+            "median": {
+              "type": ["number", "null"]
+            },
+            "min": {
+              "type": ["number", "null"]
+            },
+            "max": {
+              "type": ["number", "null"]
+            }
+          },
+          "description": "Statistical distribution of font sizes"
+        },
+        "has_font_variation": {
+          "type": "boolean",
+          "description": "Whether the page has multiple font sizes or families"
+        }
+      }
+    },
+    "semantic_blocks": {
+      "type": "array",
+      "description": "Semantic analysis results for individual text elements",
+      "items": {
+        "type": "object",
+        "required": ["block_id", "block_type", "classification_confidence", "text_content"],
+        "properties": {
+          "block_id": {
+            "type": "string",
+            "pattern": "^block_\\d{4}$"
+          },
+          "block_type": {
+            "type": "string",
+            "enum": ["header", "course_code", "department", "body_text", "page_number", "other"]
+          },
+          "classification_confidence": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "text_content": {
+            "type": "string"
+          },
+          "font_characteristics": {
+            "type": "object",
+            "properties": {
+              "relative_size": {
+                "type": "number",
+                "minimum": 0,
+                "description": "Font size relative to page median"
+              },
+              "font_style": {
+                "type": "string",
+                "enum": ["normal", "bold", "italic"],
+                "description": "Detected font style"
+              },
+              "is_emphasis": {
+                "type": "boolean",
+                "description": "Whether this text appears to be emphasized"
+              }
+            }
+          },
+          "semantic_signals": {
+            "type": "object",
+            "properties": {
+              "is_course_code": {
+                "type": "boolean"
+              },
+              "is_department": {
+                "type": "boolean"
+              },
+              "is_page_number": {
+                "type": "boolean"
+              },
+              "is_units": {
+                "type": "boolean"
+              },
+              "is_all_caps": {
+                "type": "boolean"
+              },
+              "extracted_units": {
+                "type": ["number", "null"],
+                "description": "Extracted unit count if detected"
+              },
+              "confidence": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              }
+            }
+          },
+          "position": {
+            "type": "object",
+            "required": ["x", "y", "width", "height"],
+            "properties": {
+              "x": {
+                "type": "number"
+              },
+              "y": {
+                "type": "number"
+              },
+              "width": {
+                "type": "number"
+              },
+              "height": {
+                "type": "number"
+              }
+            }
+          }
+        }
+      }
+    },
+    "processing_method": {
+      "type": "string",
+      "enum": ["basic_geometry", "enhanced_semantic"],
+      "description": "Indicates whether semantic analysis was applied"
+    },
+    "tables": {
+      "type": "array",
+      "description": "Table structures detected on the page",
+      "items": {
+        "type": "object",
+        "required": ["table_id", "rows", "columns_detected", "confidence", "bounding_box"],
+        "properties": {
+          "table_id": {
+            "type": "string",
+            "pattern": "^table_\\d{3}$"
+          },
+          "rows": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["row_id", "cells", "y_position"],
+              "properties": {
+                "row_id": {
+                  "type": "string",
+                  "pattern": "^row_\\d{3}$"
+                },
+                "cells": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "required": ["cell_id", "text", "column_index", "bounding_box"],
+                    "properties": {
+                      "cell_id": {
+                        "type": "string",
+                        "pattern": "^cell_r\\d+_c\\d+$"
+                      },
+                      "text": {
+                        "type": "string"
+                      },
+                      "column_index": {
+                        "type": "integer",
+                        "minimum": 1
+                      },
+                      "bounding_box": {
+                        "type": "object",
+                        "required": ["x", "y", "width", "height"],
+                        "properties": {
+                          "x": {"type": "number"},
+                          "y": {"type": "number"},
+                          "width": {"type": "number"},
+                          "height": {"type": "number"}
+                        }
+                      }
+                    }
+                  }
+                },
+                "y_position": {
+                  "type": "number"
+                }
+              }
+            }
+          },
+          "columns_detected": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "confidence": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "bounding_box": {
+            "type": "object",
+            "required": ["x", "y", "width", "height"],
+            "properties": {
+              "x": {"type": "number"},
+              "y": {"type": "number"},
+              "width": {"type": "number"},
+              "height": {"type": "number"}
+            }
+          }
+        }
+      }
+    },
+    "column_detection_metadata": {
+      "type": "object",
+      "description": "Metadata about column detection process",
+      "properties": {
+        "method_used": {
+          "type": "string",
+          "enum": ["density", "vertical_gaps", "kmeans", "single_column_fallback", "none"]
+        },
+        "detection_confidence": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "fallback_triggered": {
+          "type": "boolean"
+        },
+        "attempts": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "processing_metadata": {
+      "type": "object",
+      "description": "Metadata about the processing pipeline",
+      "properties": {
+        "semantic_analysis_enabled": {
+          "type": "boolean"
+        },
+        "ocr_confidence_threshold": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "font_analysis_available": {
+          "type": "boolean"
+        },
+        "classification_method": {
+          "type": "string",
+          "enum": ["font_only", "regex_only", "font_plus_regex"]
+        },
+        "table_detection_enabled": {
+          "type": "boolean"
+        },
+        "tables_detected": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "column_detection_method": {
+          "type": "string"
+        },
+        "quality_fallback_used": {
+          "type": "boolean"
+        }
+      }
+    }
+  }
+}

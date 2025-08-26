@@ -1,0 +1,118 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.com/schemas/extraction_result.schema.json",
+  "title": "ExtractionResult",
+  "type": "object",
+  "required": [
+    "page_number",
+    "extraction_method",
+    "text_data",
+    "font_data",
+    "confidence_metrics",
+    "quality_scores",
+    "page_dimensions",
+    "processing_metadata"
+  ],
+  "properties": {
+    "page_number": { "type": "integer", "minimum": 1 },
+    "extraction_method": { "type": "string", "enum": ["digital", "ocr"] },
+    "text_data": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["text", "x", "y", "width", "height"],
+        "properties": {
+          "text": { "type": "string" },
+          "x": { "type": "number" },
+          "y": { "type": "number" },
+          "width": { "type": "number" },
+          "height": { "type": "number" },
+          "space": { "type": "boolean" },
+          "confidence": { "type": ["number", "null"], "minimum": 0, "maximum": 1 }
+        },
+        "additionalProperties": true
+      }
+    },
+    "font_data": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": { "type": ["string", "null"] },
+          "type": { "type": ["string", "null"] },
+          "embedded": { "type": ["boolean", "null"] },
+          "file": { "type": ["string", "null"] },
+          "page": { "type": ["integer", "null"] }
+        },
+        "additionalProperties": true
+      }
+    },
+    "confidence_metrics": {
+      "type": "object",
+      "properties": {
+        "mean_confidence": { "type": ["number", "null"], "minimum": 0, "maximum": 1 },
+        "confidence_distribution": {
+          "type": "object",
+          "properties": {
+            "min": { "type": ["number", "null"] },
+            "p25": { "type": ["number", "null"] },
+            "median": { "type": ["number", "null"] },
+            "p75": { "type": ["number", "null"] },
+            "max": { "type": ["number", "null"] },
+            "count": { "type": ["integer", "null"], "minimum": 0 }
+          },
+          "additionalProperties": false
+        },
+        "low_confidence_count": { "type": ["integer", "null"], "minimum": 0 }
+      },
+      "additionalProperties": false
+    },
+    "quality_scores": {
+      "type": "object",
+      "properties": {
+        "text_density": { "type": ["number", "null"] },
+        "character_distribution": {
+          "type": "object",
+          "properties": {
+            "letters_ratio": { "type": ["number", "null"] },
+            "digits_ratio": { "type": ["number", "null"] },
+            "whitespace_ratio": { "type": ["number", "null"] }
+          },
+          "additionalProperties": false
+        },
+        "spatial_consistency": { "type": ["number", "null"] },
+        "overall_quality": { "type": ["number", "null"] }
+      },
+      "additionalProperties": false
+    },
+    "page_dimensions": {
+      "type": "object",
+      "required": ["width", "height"],
+      "properties": {
+        "width": { "type": ["number", "null"] },
+        "height": { "type": ["number", "null"] }
+      },
+      "additionalProperties": false
+    },
+    "processing_metadata": {
+      "type": "object",
+      "properties": {
+        "timestamp": { "type": "string" },
+        "language": { "type": ["string", "null"] },
+        "parameters": { "type": "object" }
+      },
+      "additionalProperties": true
+    },
+    "error_info": {
+      "type": ["object", "null"],
+      "properties": {
+        "message": { "type": "string" },
+        "code": { "type": ["string", "integer"] }
+      },
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": false
+}
+
+

@@ -15,16 +15,109 @@ chunking:
   stride: 3
 
 regex_hints:
-  department_header: "^[A-Z&/\-\s]{3,}\s+\([A-Z]{2,4}\)$"
-  course_header: "^[A-Z]{2,4}\s+\d+[A-Z]?\.?\s+\(.+?\)"
-  units_inline: "\((\d+(?:-\d+)?)\s+units?\)"
+  department_header: '^[A-Z&/\-\s]{3,}\s+\([A-Z]{2,4}\)$'
+  course_header: '^[A-Z]{2,4}\s+\d+[A-Z]?\.?\s+\(.+?\)'
+  units_inline: '\((\d+(?:-\d+)?)\s+units?\)'
+  page_number: '^\d+$'
+  units_pattern: '\((\d+(?:-\d+)?)\s+units?\)'
+  all_caps_header: '^[A-Z\s&/\-]{3,}$'
 
 validation_thresholds:
   schema_pass_rate: 0.95
   reference_resolution_rate: 0.90
+
+text_processing:
+  ocr_confidence_threshold: 0.6
+  font_size_threshold_ratio: 1.2
+  enable_semantic_analysis: true
+
+semantic_classification:
+  header_font_size_multiplier: 1.5
+  bold_keywords: ["DEPARTMENT", "SECTION", "UNIT", "CHAPTER"]
+  confidence_weights:
+    font: 0.6
+    regex: 0.4
+
+quality_thresholds:
+  min_ocr_confidence: 0.4
+  min_font_coverage: 0.8
+  min_classification_confidence: 0.7
+  min_column_detection_confidence: 0.7
+  max_fallback_attempts: 2
+  pipeline_success_threshold: 0.8
+  critical_error_threshold: 0.1
+
+column_detection:
+  min_gap_ratio: 0.1
+  density_smoothing: 0.8
+  kmeans_enabled: true
+  force_two_columns_threshold: 0.3
+
+table_detection:
+  enable_table_detection: true
+  min_table_columns: 3
+  min_table_rows: 2
+  alignment_tolerance: 5
+  min_cell_width: 20
+  confidence_threshold: 0.6
+
+ocr_settings:
+  default_language: "eng"
+  language_detection_enabled: true
+  language_detection_confidence_threshold: 0.8
+  fallback_language: "eng"
+  tesseract_timeout_seconds: 300
+  ocr_retry_attempts: 2
+
+error_handling:
+  enable_pipeline_recovery: true
+  max_retry_attempts: 3
+  retry_delay_seconds: 5
+  enable_fallback_to_legacy: false
+  continue_on_page_errors: true
+  error_reporting_level: "detailed"  # minimal, detailed, comprehensive
+
+pipeline_validation:
+  validate_dependencies_on_start: true
+  validate_configuration_on_start: true
+  check_output_integrity: true
+  required_free_disk_space_mb: 1000
+
+logging:
+  log_level: "INFO"  # DEBUG, INFO, WARN, ERROR
+  log_to_file: true
+  log_file_path: "data/logs/pipeline.log"
+  max_log_file_size_mb: 100
+
+fallback_strategies:
+  enable_quality_fallback: true
+  digital_quality_threshold: 0.35
+  ocr_confidence_threshold: 0.55
+  single_column_density_threshold: 0.3
 
 jobs_defaults:
   model: gpt-4o-mini
   retries: 2
   temperature: 0.0
 
+enhanced_output:
+  enable_enhanced_json: true
+  include_detailed_bounding_boxes: true
+  include_confidence_distributions: true
+  include_font_analysis_details: true
+
+output_formats:
+  generate_legacy_geometry: true
+  generate_enhanced_page: true
+  generate_extraction_json: true
+  generate_llm_json: true
+
+quality_reporting:
+  include_quality_breakdown: true
+  confidence_histogram_bins: 10
+  spatial_analysis_detail_level: "detailed"  # basic, detailed, comprehensive
+
+metadata_tracking:
+  track_processing_times: true
+  include_pipeline_version: true
+  detailed_error_tracking: true
