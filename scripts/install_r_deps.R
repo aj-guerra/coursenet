@@ -1,26 +1,24 @@
 #!/usr/bin/env Rscript
 
-required <- c(
-  "jsonlite",
-  "pdftools"
+# Minimal R dependency bootstrap for using marker-pdf via R wrappers
+
+lib_dir <- Sys.getenv("R_LIBS_USER", unset = "~/.Rlibs")
+dir.create(lib_dir, recursive = TRUE, showWarnings = FALSE)
+.libPaths(c(lib_dir, .libPaths()))
+
+required_packages <- c(
+  "dotenv",     # load .env for GOOGLE_API_KEY, etc.
+  "optparse",   # CLI arg parsing
+  "processx"    # robust system process execution
 )
 
-is_installed <- function(pkg) {
-  is.element(pkg, installed.packages()[, 1])
+installed <- rownames(installed.packages())
+for (pkg in required_packages) {
+  if (!(pkg %in% installed)) {
+    install.packages(pkg, repos = "https://cloud.r-project.org", lib = lib_dir)
+  }
 }
 
-to_install <- required[!vapply(required, is_installed, logical(1))]
+cat("R dependency install complete.\n")
 
-if (length(to_install) > 0) {
-  lib_dir <- Sys.getenv("R_LIBS_USER", unset = "/workspace/.Rlibs")
-  dir.create(lib_dir, recursive = TRUE, showWarnings = FALSE)
-  .libPaths(c(lib_dir, .libPaths()))
-  Sys.setenv(R_LIBS_USER = lib_dir)
-  cat("Installing R packages to ", lib_dir, ": ", paste(to_install, collapse = ", "), "\n", sep = "")
-  install.packages(to_install, repos = "https://cloud.r-project.org", lib = lib_dir)
-} else {
-  cat("All required R packages already installed.\n")
-}
-
-cat("R dependency check complete.\n")
 
