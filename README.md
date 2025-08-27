@@ -6,44 +6,58 @@ Overview
 Quickstart
 
 Marker-based PDF to Markdown
-- This repo includes an R wrapper that calls the `marker_single` CLI to convert PDFs to Markdown/JSON with optional LLM enhancement (Gemini) and OCR.
+- This repo now includes a Python wrapper that calls the `marker_single` CLI to convert PDFs to Markdown/JSON with optional LLM enhancement (Gemini) and OCR. An R wrapper remains available but is deprecated.
 
 Setup
 1) **Marker Installation**
    - Install marker-pdf: `pip install marker-pdf`
-   - **Important**: Ensure `marker_single` is available in your PATH
+   - Or use our Docker image (see Docker section below)
+   - **Important**: Ensure `marker_single` is available in your PATH when running locally
    - Test installation: `marker_single --help`
-   - If using conda: activate your environment before running the R script
 
 2) **Environment Variables**
    - Create a `.env` file with `GEMINI_API_KEY=your_key_here` if using `--use_llm`
-   - The script will automatically load this when LLM features are enabled
+   - The Python script will automatically load this when LLM features are enabled
 
-3) **R Dependencies**
-   - Install required R packages: `Rscript scripts/install_r_deps.R`
-
-Convert a PDF
+Convert a PDF (Python)
 - **Basic conversion** (no LLM):
   ```bash
-  Rscript scripts/run_marker_convert.R --input data/raw/p411.pdf --output_dir data/marker_output
+  python scripts/run_marker_convert.py --input data/raw/p411.pdf --output_dir data/marker_output
   ```
 
 - **With LLM enhancement** (requires GEMINI_API_KEY):
   ```bash
-  Rscript scripts/run_marker_convert.R --input data/raw/p411.pdf --output_dir data/marker_output --use_llm
+  python scripts/run_marker_convert.py --input data/raw/p411.pdf --output_dir data/marker_output --use_llm
   ```
 
 - **With custom batch sizes** (for resource-constrained environments):
   ```bash
-  Rscript scripts/run_marker_convert.R --input data/raw/p411.pdf --output_dir data/marker_output \
+  python scripts/run_marker_convert.py --input data/raw/p411.pdf --output_dir data/marker_output \
     --layout_batch_size 1 --detection_batch_size 1 --recognition_batch_size 1 --table_rec_batch_size 1
   ```
 
 - **With configuration file** (advanced settings):
   ```bash
-  Rscript scripts/run_marker_convert.R --input data/raw/p411.pdf --output_dir data/marker_output \
+  python scripts/run_marker_convert.py --input data/raw/p411.pdf --output_dir data/marker_output \
     --config_json config/marker_config.json
   ```
+
+Docker (GPU-ready, e.g., Lambda Labs)
+- Build the image:
+  ```bash
+  docker build -t coursenet/marker-runner .
+  ```
+
+- Run with GPU and volume mounts:
+  ```bash
+  docker run --rm --gpus all \
+    -v "$PWD/data/raw":/app/data/raw \
+    -v "$PWD/data/marker_output":/app/data/marker_output \
+    --env-file .env \
+    coursenet/marker-runner \
+    --input /app/data/raw/p411.pdf --output_dir /app/data/marker_output --use_llm
+  ```
+  - For CPU-only, add `-e TORCH_DEVICE=cpu` and omit `--gpus all`.
 
 Key Features
 - **Flexible Batch Sizes**: Optional batch size controls for resource management
@@ -77,14 +91,14 @@ Project Layout
 - `config/`: runtime settings and mappings
 - `docs/`: documentation and ADRs  
 - `workflows/`: job manifests
-- `scripts/`: R helper scripts (`install_r_deps.R`, `run_marker_convert.R`)
+- `scripts/`: Python helper script (`run_marker_convert.py`), legacy R scripts
 - `data/raw/`: Input PDF files
 - `data/interim/`: Processed intermediate data
 - `requirements.txt`: minimal Python deps for other tooling
 
 Notes
 - Batch size parameters are optional and can be used for resource management
-- Ensure marker_single is properly installed and available in PATH
-- LLM features require a valid GEMINI_API_KEY in .env file
+- Ensure `marker_single` is properly installed and available in PATH (or use Docker)
+- LLM features require a valid GEMINI_API_KEY in `.env` file
 - See [Marker documentation](https://github.com/datalab-to/marker) for more details
 
