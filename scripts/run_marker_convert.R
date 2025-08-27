@@ -32,18 +32,18 @@ if (is.null(opts$input)) {
 
 if (!file.exists(opts$input)) stop(sprintf("Input not found: %s", opts$input))
 
-# Load .env and ensure GOOGLE_API_KEY is present for Gemini
+# Load .env and ensure GEMINI_API_KEY is present for Gemini
 if (file.exists(opts$env)) load_dot_env(file = opts$env)
 
-google_key <- Sys.getenv("GOOGLE_API_KEY", unset = "")
+google_key <- Sys.getenv("GEMINI_API_KEY", unset = "")
 if (isTRUE(opts$use_llm) && nzchar(google_key) == FALSE) {
-  stop("GOOGLE_API_KEY is required in .env when --use_llm is set.")
+  stop("GEMINI_API_KEY is required in .env when --use_llm is set.")
 }
 
 dir.create(opts$output_dir, recursive = TRUE, showWarnings = FALSE)
 
-# Build marker-pdf CLI command
-marker_cmd <- c("marker-pdf", shQuote(opts$input),
+# Build marker CLI command (marker_single per docs)
+marker_cmd <- c("marker_single", shQuote(opts$input),
   "--output_dir", shQuote(opts$output_dir)
 )
 
@@ -63,12 +63,10 @@ if (!is.na(opts$model) && nzchar(opts$model)) {
 
 # Environment variables for marker
 envs <- c(
-  GOOGLE_API_KEY = google_key
+  GEMINI_API_KEY = google_key
 )
 
 cat("Running:", paste(marker_cmd, collapse = " "), "\n")
-
-# Execute marker-pdf and stream output
 res <- run(
   command = marker_cmd[1],
   args = marker_cmd[-1],
