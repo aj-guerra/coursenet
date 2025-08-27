@@ -6,35 +6,85 @@ Overview
 Quickstart
 
 Marker-based PDF to Markdown
-- This repo includes an R wrapper that calls the `marker-pdf` CLI to convert PDFs to Markdown/JSON with optional LLM enhancement (Gemini) and forced OCR. See Marker docs: [marker README](https://github.com/datalab-to/marker?tab=readme-ov-file#llm-services).
+- This repo includes an R wrapper that calls the `marker_single` CLI to convert PDFs to Markdown/JSON with optional LLM enhancement (Gemini) and OCR.
 
 Setup
-1) Environment
-   - Ensure a `.env` exists with `GOOGLE_API_KEY=...` (Gemini key) if using `--use_llm`.
-2) Python CLI (marker-pdf)
-   - Install via pip or pipx:
-     - `pip install marker-pdf` or `pipx install marker-pdf`
-   - Verify install: `marker-pdf --help`.
-3) R runtime deps
-   - Install minimal R packages used by the wrapper:
-     - `Rscript scripts/install_r_deps.R`
+1) **Marker Installation**
+   - Install marker-pdf: `pip install marker-pdf`
+   - **Important**: Ensure `marker_single` is available in your PATH
+   - Test installation: `marker_single --help`
+   - If using conda: activate your environment before running the R script
+
+2) **Environment Variables**
+   - Create a `.env` file with `GEMINI_API_KEY=your_key_here` if using `--use_llm`
+   - The script will automatically load this when LLM features are enabled
+
+3) **R Dependencies**
+   - Install required R packages: `Rscript scripts/install_r_deps.R`
 
 Convert a PDF
-- Example (outputs to `data/marker_output` by default):
-  - `Rscript scripts/run_marker_convert.R --input path/to/file.pdf --output_dir data/marker_output --use_llm --force_ocr`
-- Notes:
-  - When `--use_llm` is set, the wrapper passes `--llm gemini` to `marker-pdf` and uses `GOOGLE_API_KEY` from `.env`.
-  - Set device via `--device cpu` or `--device cuda:0` (maps to `TORCH_DEVICE`).
-  - You can override the model via `--model <name>`; otherwise Marker defaults apply.
+- **Basic conversion** (no LLM):
+  ```bash
+  Rscript scripts/run_marker_convert.R --input data/raw/p411.pdf --output_dir data/marker_output
+  ```
+
+- **With LLM enhancement** (requires GEMINI_API_KEY):
+  ```bash
+  Rscript scripts/run_marker_convert.R --input data/raw/p411.pdf --output_dir data/marker_output --use_llm
+  ```
+
+- **With custom batch sizes** (for resource-constrained environments):
+  ```bash
+  Rscript scripts/run_marker_convert.R --input data/raw/p411.pdf --output_dir data/marker_output \
+    --layout_batch_size 1 --detection_batch_size 1 --recognition_batch_size 1 --table_rec_batch_size 1
+  ```
+
+- **With configuration file** (advanced settings):
+  ```bash
+  Rscript scripts/run_marker_convert.R --input data/raw/p411.pdf --output_dir data/marker_output \
+    --config_json config/marker_config.json
+  ```
+
+Key Features
+- **Flexible Batch Sizes**: Optional batch size controls for resource management
+- **LLM Integration**: Optional Gemini LLM enhancement for better results
+- **Environment Management**: Automatic .env file loading for API keys
+- **Configuration Files**: JSON-based configuration for advanced settings
+- **Simple Setup**: Uses standard marker_single CLI with sensible defaults
+
+Configuration Files
+- Use `--config_json` to specify advanced marker settings via JSON
+- Sample configs provided:
+  - `config/marker_config.json` - Basic low-resource settings
+  - `config/marker_config_llm.json` - LLM-enabled with resource optimization
+- Get all available settings: `marker_single config --help`
+- Configuration overrides command-line batch size options
+- See [Marker documentation](https://github.com/datalab-to/marker) for complete configuration reference
+
+Available Options
+- `--input`: Input PDF file path (required)
+- `--output_dir`: Output directory [default: data/marker_output]
+- `--use_llm`: Enable LLM processing with Gemini [default: false]
+- `--force_ocr`: Force OCR on entire document [default: false]
+- `--layout_batch_size`: Layout model batch size [optional]
+- `--detection_batch_size`: Detection model batch size [optional]
+- `--recognition_batch_size`: Recognition model batch size [optional]
+- `--table_rec_batch_size`: Table recognition batch size [optional]
+- `--config_json`: Path to JSON configuration file [optional]
+- `--device`: PyTorch device (cpu, cuda:0, mps) [optional]
 
 Project Layout
 - `config/`: runtime settings and mappings
-- `docs/`: documentation and ADRs
+- `docs/`: documentation and ADRs  
 - `workflows/`: job manifests
 - `scripts/`: R helper scripts (`install_r_deps.R`, `run_marker_convert.R`)
-- `requirements.txt`: minimal Python deps for other tooling (not required for marker)
+- `data/raw/`: Input PDF files
+- `data/interim/`: Processed intermediate data
+- `requirements.txt`: minimal Python deps for other tooling
 
 Notes
-- Marker CLI reference: [marker README](https://github.com/datalab-to/marker?tab=readme-ov-file#llm-services)
-- LLM usage is optional; if no `GOOGLE_API_KEY` is present, omit `--use_llm`.
+- Batch size parameters are optional and can be used for resource management
+- Ensure marker_single is properly installed and available in PATH
+- LLM features require a valid GEMINI_API_KEY in .env file
+- See [Marker documentation](https://github.com/datalab-to/marker) for more details
 

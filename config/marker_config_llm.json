@@ -1,0 +1,46 @@
+{
+  "_comment": "Resource-optimized configuration with LLM enabled. Sets batch sizes to 1 and limits LLM concurrency while enabling all LLM processors. Requires GEMINI_API_KEY. Use with: --config_json config/marker_config_llm.json",
+  "LayoutBuilder": {
+    "layout_batch_size": 1
+  },
+  "LineBuilder": {
+    "detection_batch_size": 1,
+    "ocr_error_batch_size": 1
+  },
+  "OcrBuilder": {
+    "recognition_batch_size": 1
+  },
+  "TableProcessor": {
+    "detection_batch_size": 1,
+    "table_rec_batch_size": 1,
+    "recognition_batch_size": 1
+  },
+  "LLMTableProcessor": {
+    "max_concurrency": 1,
+    "use_llm": true
+  },
+  "LLMTableMergeProcessor": {
+    "max_concurrency": 1,
+    "use_llm": true
+  },
+  "LLMSectionHeaderProcessor": {
+    "max_concurrency": 1,
+    "use_llm": true
+  },
+  "LLMImageDescriptionProcessor": {
+    "max_concurrency": 1,
+    "use_llm": true
+  },
+  "LLMHandwritingProcessor": {
+    "max_concurrency": 1,
+    "use_llm": true
+  },
+  "PdfProvider": {
+    "pdftext_workers": 1
+  },
+  "GoogleGeminiService": {
+    "timeout": 60,
+    "max_retries": 3,
+    "retry_wait_time": 5
+  }
+}
